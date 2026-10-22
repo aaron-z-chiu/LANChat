@@ -2,14 +2,16 @@ import { EventEmitter } from 'node:events';
 import { randomUUID } from 'node:crypto';
 import { Store } from './store.js';
 import { Discovery } from './discovery.js';
-import { Transport } from './transport.js';
+import { TransportManager } from './transport-manager.js';
+import type { LrdtOptions } from './lrdt/transport.js';
+import { prioritySchema, type NetworkPriority } from './protocol.js';
 import { chatSchema, groupSchema, id, name, type ChatMessage, type DiscoveryPacket, type Group, type Peer, type Snapshot, type Wire } from './protocol.js';
 
-export interface EngineOptions { discoveryPort?: number; heartbeatMs?: number; timeoutMs?: number; tickMs?: number; syncMs?: number; log?: (event: string, details?: unknown) => void }
+export interface EngineOptions { priority?: NetworkPriority; lrdt?: LrdtOptions; discoveryPort?: number; heartbeatMs?: number; timeoutMs?: number; tickMs?: number; syncMs?: number; log?: (event: string, details?: unknown) => void }
 export class Engine extends EventEmitter {
   readonly store: Store;
   readonly peers = new Map<string, Peer>();
-  private transport?: Transport;
+  private transport?: TransportManager;
   private discovery?: Discovery;
   private timer?: ReturnType<typeof setInterval>;
   private sessions = new Map<string, { dbId: string; request?: string; requestedAt: number; cursor?: number }>();
@@ -20,12 +22,18 @@ export class Engine extends EventEmitter {
   private readonly log: (event: string, details?: unknown) => void;
   constructor(path: string, private options: EngineOptions = {}) {
     super(); this.store = new Store(path); this.log = options.log ?? ((event, details) => console.log(JSON.stringify({ time: new Date().toISOString(), event, details })));
+    if (options.priority) this.store.set('networkPriority', prioritySchema.parse(options.priority));
     for (const peer of this.store.peers()) this.peers.set(peer.peerId, peer);
   }
+  get priority(): NetworkPriority { return this.store.setting<NetworkPriority>('networkPriority') ?? 'auto'; }
+  setPriority(value: NetworkPriority) { return this.enqueue(async () => {
+    const wasRunning=this.running; this.store.set('networkPriority',prioritySchema.parse(value));
+    if(wasRunning){await this.stopNetwork();await this.startNetwork();} this.changed();
+  }); }
   get identity() { return this.store.identity(); }
   snapshot(): Snapshot {
-    return { identity: this.identity, peers: [...this.peers.values()], groups: this.store.groups(),
-      messages: this.store.messages(), network: this.running, error: this.networkError };
+    return { identity: this.identity, peers: [...this.peers.values()].map(p=>({...p,...this.transport?.diagnostics(p.peerId)})), groups: this.store.groups(),
+      priority: this.priority, messages: this.store.messages(), network: this.running, error: this.networkError };
   }
   private changed() { this.emit('change', this.snapshot()); }
   async rename(displayName: string) {
@@ -42,7 +50,7 @@ export class Engine extends EventEmitter {
   start() { return this.enqueue(() => this.startNetwork()); }
   private async startNetwork() {
     if (this.running || !this.identity.displayName) return;
-    const transport = new Transport(() => this.identity, this.store.dbId,
+    const transport = new TransportManager(() => this.identity, this.store.dbId, () => this.priority,
       (peer, msg) => this.receive(peer, msg),
       (peer, dbId, ip, port, displayName) => {
         this.upsert(peer, displayName, ip, port, 'CONNECTED');
@@ -51,12 +59,12 @@ export class Engine extends EventEmitter {
       }, peer => {
         this.sessions.delete(peer); this.retryAt.set(peer, Date.now() + 500);
         const p = this.peers.get(peer); if (p) p.connection = this.running && p.status === 'online' ? 'RECONNECTING' : 'DISCONNECTED'; this.changed();
-      }, this.log);
+      }, this.log, this.options.lrdt);
     this.transport = transport;
     try {
       await transport.start();
       this.discovery = new Discovery(() => this.identity, transport.port,
-        (packet, ip) => this.discovered(packet, ip), this.log, this.options.discoveryPort, this.options.heartbeatMs);
+        (packet, ip) => this.discovered(packet, ip), this.log, this.options.discoveryPort, this.options.heartbeatMs, () => transport.capabilities());
       await this.discovery.start();
       this.running = true; this.networkError = undefined;
       this.timer = setInterval(() => this.tick(), this.options.tickMs ?? 500);
@@ -81,6 +89,7 @@ export class Engine extends EventEmitter {
     // A changed TCP port signals a restart; a failed old route retries the latest IP.
     if (previous && previous.port !== packet.tcpPort) this.transport?.drop(packet.peerId);
     this.upsert(packet.peerId, packet.displayName, ip, packet.tcpPort);
+    const discoveredPeer=this.peers.get(packet.peerId); if(discoveredPeer)this.transport?.observe(packet,discoveredPeer);
     if (!wasOnline) { this.log('peer.discovered', { peer: packet.peerId, ip }); this.discovery?.announce('ANNOUNCE'); }
     else this.log('peer.heartbeat', { peer: packet.peerId });
     this.dial(packet.peerId); this.changed();

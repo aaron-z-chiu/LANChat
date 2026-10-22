@@ -1,7 +1,7 @@
 // Runs the real production engine in an independent OS process, no fake transport.
 import { Engine } from '../src/core/engine';
 const [path, port] = process.argv.slice(2);
-const engine = new Engine(path, { discoveryPort: Number(port), heartbeatMs: 200, timeoutMs: 1400, tickMs: 60, syncMs: 300,
+const engine = new Engine(path, { priority: (process.argv[4] ?? 'safe') as 'safe'|'auto'|'custom', discoveryPort: Number(port), heartbeatMs: 200, timeoutMs: 1400, tickMs: 60, syncMs: 300,
   log: (event, details) => { if (process.connected) process.send?.({ event, details }); } });
 process.on('message', async (raw: unknown) => {
   const { request, method, args } = raw as { request: number; method: string; args: any[] };

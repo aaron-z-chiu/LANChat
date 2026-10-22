@@ -4,16 +4,19 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { createServer } from 'vite';
+import dgram from 'node:dgram';
+import { once } from 'node:events';
 
 const root = await mkdtemp(join(tmpdir(), 'lanchat-desktop-'));
 const apps = [], rendererErrors = [], logs = [];
 const env = { ...process.env, LANCHAT_DATA_ROOT: root };
 delete env.ELECTRON_RUN_AS_NODE;
+const discoverySocket=dgram.createSocket('udp4');discoverySocket.bind(0);await once(discoverySocket,'listening');env.LANCHAT_DISCOVERY_PORT=String(discoverySocket.address().port);await new Promise(r=>discoverySocket.close(r));
 const devServer = process.argv.includes('--dev') ? await createServer({ root: 'src/ui', server: { host: '127.0.0.1', port: 0 }, base: './' }) : undefined;
 if (devServer) { await devServer.listen(); env.LANCHAT_DEV_URL = devServer.resolvedUrls.local[0]; }
 else delete env.LANCHAT_DEV_URL;
 async function launch(profile) {
-  const app = await electron.launch({ executablePath: electronPath, args: ['.', '--profile', profile], env, timeout: 25000 });
+  const app = await electron.launch({ executablePath: electronPath, args: ['.', '--profile', profile, ...(process.argv.includes('--blocked-lrdt') ? ['--disable-lrdt'] : [])], env, timeout: 25000 });
   apps.push(app);
   app.process().stderr?.on('data', bytes => logs.push(bytes.toString()));
   const page = await app.firstWindow();
@@ -42,6 +45,16 @@ try {
   }
   const [a, b, c] = peers;
   await waitFor(async () => (await Promise.all(peers.map(p => snapshot(p.page)))).every(s => s.peers.length === 2 && s.peers.every(p => p.connection === 'CONNECTED')), 'three desktop profiles discover each other');
+  const blocked=process.argv.includes('--blocked-lrdt');
+  await waitFor(async()=> (await Promise.all(peers.map(p=>snapshot(p.page)))).every(s=>s.peers.every(p=>blocked ? p.fallback : p.transport==='lrdt')), 'Auto LRDT selection or forced fallback');
+  await a.page.getByRole('button',{name:'Edit display name'}).click();
+  await a.page.getByLabel('Network priority',{exact:true}).selectOption('safe');
+  await waitFor(async()=> (await snapshot(a.page)).peers.every(p=>p.connection==='CONNECTED'&&p.transport==='tcp'), 'Safe selects TCP');
+  await a.page.getByRole('button',{name:'Cancel',exact:true}).click();
+  await a.page.getByRole('button',{name:'Edit display name'}).click();
+  await a.page.getByLabel('Network priority',{exact:true}).selectOption('custom');
+  await waitFor(async()=> (await snapshot(a.page)).peers.every(p=>p.connection==='CONNECTED'&&(blocked?p.fallback:p.transport==='lrdt')), 'Custom renegotiates');
+  await a.page.getByRole('button',{name:'Cancel',exact:true}).click();
   const security = await a.app.evaluate(({ BrowserWindow }) => {
     const prefs = BrowserWindow.getAllWindows()[0].webContents.getLastWebPreferences();
     return { contextIsolation: prefs.contextIsolation, nodeIntegration: prefs.nodeIntegration, sandbox: prefs.sandbox };
@@ -90,7 +103,7 @@ try {
   if (!rejected) throw new Error('Invalid IPC input accepted');
   await a.page.screenshot({ path: 'docs/desktop-smoke.png' });
   if (rendererErrors.length) throw new Error(rendererErrors.join('\n'));
-  console.log(JSON.stringify({ success: true, mode: devServer ? 'development' : 'compiled', profiles: 3, runtime: await a.app.evaluate(() => process.versions), security, verified: ['first-launch setup', 'automatic UDP discovery', 'private message + persisted ACK', 'group create + fanout', 'group rename replication', 'pause + reconnect recovery', 'stable identity/history after desktop restart', 'no duplicate messages', 'IPC validation', 'no renderer Node access', 'Chromium offline'], screenshot: 'docs/desktop-smoke.png' }, null, 2));
+  console.log(JSON.stringify({ success: true, mode: devServer ? 'development' : 'compiled', profiles: 3, runtime: await a.app.evaluate(() => process.versions), security, verified: ['Settings Safe selects TCP', 'Settings Custom selects LRDT or blocked-UDP fallback', 'first-launch setup', 'automatic UDP discovery', 'private message + persisted ACK', 'group create + fanout', 'group rename replication', 'pause + reconnect recovery', 'stable identity/history after desktop restart', 'no duplicate messages', 'IPC validation', 'no renderer Node access', 'Chromium offline'], screenshot: 'docs/desktop-smoke.png' }, null, 2));
 } catch (error) {
   console.error(logs.join('').slice(-12000));
   throw error;

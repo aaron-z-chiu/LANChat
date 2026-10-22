@@ -1,5 +1,6 @@
 import type { Snapshot } from '../core/protocol.js';
 export interface API {
+  priority(value: import('../core/protocol.js').NetworkPriority): Promise<void>;
   snapshot(): Promise<Snapshot>;
   rename(name: string): Promise<void>;
   send(kind: 'private' | 'group', targetId: string, content: string): Promise<string>;

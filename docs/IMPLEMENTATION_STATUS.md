@@ -1,3 +1,20 @@
+# Dual-transport upgrade — 22 October 2026
+
+This section supersedes the original TCP-only session notes below.
+
+- **Dual-Transport Architecture — completed:** Engine uses Transport Manager; original TCP implementation/framing/canonical connections remain. TCP stays active for negotiation/control/fallback while selected LRDT carries LCP frames.
+- **LRDT — completed for educational use:** 1,200-byte datagrams, binary headers, session-bound handshake, fragmentation/reassembly, sequence numbers, selective ACK/retransmission, bounded ordered receive window, duplicate suppression, adaptive RTT/RTO with Karn sampling, slow start/additive increase/timeout decrease, statistics and seeded impairment.
+- **Mode Negotiation — completed:** persisted Auto/Safe/Custom Settings and CLI override. Either Safe selects TCP; two compatible non-Safe modes prefer LRDT. Mode edits restart sessions with history/pending state retained. Custom replaces proposed Speed because bulk measurements favor TCP.
+- **Fallback — completed:** bounded 1.5-second handshake, session failure/idle/expiry detection, TCP fallback notice and latch. Real blocked-UDP tests cover Auto and Custom.
+- **Benchmark Status — measured:** 54 runs, three repetitions, seeds 100–102; virtual-time production-session loss/window/cwnd/jitter experiments plus real loopback engine TCP/LRDT/mode/fallback/recovery runs. JSON/CSV and congestion traces in results/. See LRDT_EVALUATION.md for exact measurements and limits.
+- **Tests:** 39 standard tests passed (preserved TCP recovery and new LRDT/mixed/fallback tests); separate two-test multi-process recovery invocation passed with Auto/LRDT. Updated compiled Electron smoke passed with Settings Safe/Custom and default LRDT; the blocked-LRDT desktop fallback smoke also passed.
+- **Partial / untested:** no fast retransmit, MTU probing, fairness validation, or Windows/physical cross-device execution. Detailed statistical loss/reordering tests use a simulated clock, not physical radio loss. TCP is a required control channel. Expiration/security/scaling limitations in the original implementation still apply.
+- **Windows physical-test status:** still pending. Allow UDP discovery 45878, dynamic LRDT UDP, and dynamic TCP control/fallback. No Windows runtime success is claimed.
+
+Commands: `npm test`, `npm run test:lrdt`, `npm run build`, `npm run test:desktop`, `npm run test:desktop -- --blocked-lrdt`, `npm run benchmark`. Design: LRDT_DESIGN.md. Evaluation: LRDT_EVALUATION.md.
+
+---
+
 # LANChat implementation status
 
 Session date: **22 October 2026 (Asia/Singapore)**.

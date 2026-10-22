@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type { API } from './api.js';
 const api: API = {
+  priority: value => ipcRenderer.invoke('lanchat:priority',value),
   snapshot: () => ipcRenderer.invoke('lanchat:snapshot'),
   rename: name => ipcRenderer.invoke('lanchat:rename', name),
   send: (kind, target, content) => ipcRenderer.invoke('lanchat:send', kind, target, content),

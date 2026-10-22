@@ -24,7 +24,7 @@ class PeerProcess {
   private sequence = 0;
   private pending = new Map<number, { resolve: (x: any) => void; reject: (e: Error) => void; timer: ReturnType<typeof setTimeout> }>();
   constructor(path: string, discoveryPort: number) {
-    this.child = fork(fileURLToPath(new URL('./peer-worker.ts', import.meta.url)), [path, String(discoveryPort)], { execArgv: ['--import', 'tsx'], stdio: ['ignore', 'pipe', 'pipe', 'ipc'] });
+    this.child = fork(fileURLToPath(new URL('./peer-worker.ts', import.meta.url)), [path, String(discoveryPort), process.env.LANCHAT_TEST_PRIORITY ?? 'safe'], { execArgv: ['--import', 'tsx'], stdio: ['ignore', 'pipe', 'pipe', 'ipc'] });
     let stderr = '';
     this.child.stderr?.on('data', b => { stderr = (stderr + b).slice(-8000); });
     this.ready = new Promise((resolve, reject) => {
@@ -71,6 +71,7 @@ test('three separate peers discover, persist, ACK, replicate, recover via anothe
     const [sa, sb, sc] = await Promise.all([a.snapshot(), b.snapshot(), c.snapshot()]);
     const aid = sa.identity.peerId, bid = sb.identity.peerId, cid = sc.identity.peerId;
     await until(async () => (await Promise.all([a.snapshot(), b.snapshot(), c.snapshot()])).every(s => s.peers.length === 2 && s.peers.every(p => p.connection === 'CONNECTED')), 'all three automatically discover and connect');
+    await until(async () => (await Promise.all([a.snapshot(),b.snapshot(),c.snapshot()])).every(s=>s.peers.every(p=>p.transport === (process.env.LANCHAT_TEST_PRIORITY === 'auto' ? 'lrdt':'tcp'))), 'expected negotiated transport');
     const pm = await a.call<string>('send', 'private', bid, 'Private hello, Bob');
     await until(async () => (await a.snapshot()).messages.find(m => m.messageId === pm)?.state === 'delivered', 'private application ACK');
     assert.equal((await b.snapshot()).messages.filter(m => m.messageId === pm).length, 1);
@@ -89,10 +90,12 @@ test('three separate peers discover, persist, ACK, replicate, recover via anothe
     await b.call('updateGroup', groupId, 'Boarding now', [aid, bid, cid]);
     // Original author vanishes. Charlie must recover Alice's history from Bob.
     await a.call('stop');
+    c.events=[];
     await c.call('start');
     await until(async () => { const s = await c.snapshot(); return s.groups[0]?.name === 'Boarding now' && missing.every(id => s.messages.some(m => m.messageId === id)); }, 'paged peer-assisted recovery with original author offline');
     assert.equal((await c.snapshot()).messages.filter(m => m.kind === 'private').length, 0);
     assert.ok(c.events.includes('sync.page'));
+    if(process.env.LANCHAT_TEST_PRIORITY==='auto')assert.ok(c.events.includes('lrdt.received.SYNC_RESPONSE'),'history responses actually arrived over UDP');
     await a.call('start');
     await until(async () => (await a.snapshot()).messages.filter(m => missing.includes(m.messageId) && m.senderId === aid).every(m => m.state === 'delivered'), 'original sender retries receive duplicate ACKs');
     const afterSync = await c.snapshot();

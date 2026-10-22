@@ -14,7 +14,9 @@
     "start": "electron .",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test --test-concurrency=1 tests/*.test.ts",
-    "test:desktop": "node scripts/smoke.mjs"
+    "test:desktop": "node scripts/smoke.mjs",
+    "test:lrdt": "node scripts/run-lrdt-tests.mjs",
+    "benchmark": "node --import tsx scripts/benchmarks/run.ts"
   },
   "dependencies": {
     "react": "^19.0.0",

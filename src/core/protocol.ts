@@ -19,13 +19,19 @@ export const chatSchema = z.object({
   content: z.string().trim().min(1).max(8000), audience: z.array(id).min(1).max(64),
 }).strict().refine(m => new Set(m.audience).size === m.audience.length &&
   (m.kind !== 'private' || (m.audience.length === 1 && m.audience[0] === m.targetId)));
+export const prioritySchema = z.enum(['auto', 'safe', 'custom']);
+export type NetworkPriority = z.infer<typeof prioritySchema>;
+const capabilities = z.object({version: z.literal(1), port: z.number().int().min(1).max(65535), priority: prioritySchema}).strict();
 export const discoverySchema = z.object({
   protocol: z.literal('LANChat'), version: z.literal(VERSION),
   type: z.enum(['ANNOUNCE', 'HEARTBEAT', 'GOODBYE']), peerId: id, displayName: name,
   tcpPort: z.number().int().min(1).max(65535),
-}).strict();
+  capabilities: capabilities.optional().catch(undefined),
+}).strip();
 const base = { version: z.literal(VERSION), senderId: id };
 export const wireSchema = z.discriminatedUnion('type', [
+  z.object({...base, type:z.literal('LRDT_START'),session:id,port:z.number().int().min(1).max(65535)}).strict(),
+  z.object({...base, type:z.literal('LRDT_FALLBACK')}).strict(),
   z.object({ ...base, type: z.literal('HELLO'), displayName: name, dbId: id, tcpPort: z.number().int().min(1).max(65535) }).strict(),
   z.object({ ...base, type: z.literal('PRIVATE_MESSAGE'), message: chatSchema }).strict(),
   z.object({ ...base, type: z.literal('GROUP_MESSAGE'), message: chatSchema }).strict(),
@@ -42,9 +48,9 @@ export type ChatMessage = z.infer<typeof chatSchema>;
 export type Wire = z.infer<typeof wireSchema>;
 export type DiscoveryPacket = z.infer<typeof discoverySchema>;
 export interface Identity { peerId: string; displayName: string }
-export interface Peer extends Identity { ip: string; port: number; lastSeen: number; status: 'online' | 'offline'; connection: 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'RECONNECTING' }
+export interface Peer extends Identity { transport?: 'tcp' | 'lrdt'; fallback?: boolean; ip: string; port: number; lastSeen: number; status: 'online' | 'offline'; connection: 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'RECONNECTING' }
 export interface DisplayMessage extends ChatMessage { state: 'sending' | 'sent' | 'delivered' | 'failed'; delivered: number; recipients: number }
-export interface Snapshot { identity: Identity; peers: Peer[]; groups: Group[]; messages: DisplayMessage[]; network: boolean; error?: string }
+export interface Snapshot { identity: Identity; peers: Peer[]; groups: Group[]; messages: DisplayMessage[]; network: boolean; priority?: NetworkPriority; diagnostics?: Record<string,unknown>; error?: string }
 
 export function compareGroups(a: Group, b: Group): number {
   const lexical = (x: string, y: string) => x === y ? 0 : x < y ? -1 : 1;

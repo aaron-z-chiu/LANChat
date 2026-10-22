@@ -17,7 +17,7 @@ export class Discovery {
   constructor(private identity: () => Identity, private tcpPort: number,
     private onPacket: (p: DiscoveryPacket, ip: string) => void,
     private log: (event: string, details?: unknown) => void,
-    private port = DISCOVERY_PORT, private interval = 2000) {}
+    private port = DISCOVERY_PORT, private interval = 2000, private capabilities: () => DiscoveryPacket['capabilities'] = () => undefined) {}
   async start() {
     const socket = dgram.createSocket({ type: 'udp4', reuseAddr: true }); this.socket = socket;
     socket.on('error', error => this.log('discovery.error', { message: error.message }));
@@ -54,6 +54,14 @@ export class Discovery {
     const packet = Buffer.from(JSON.stringify({ protocol: 'LANChat', version: 1, type,
       ...this.identity(), tcpPort: this.tcpPort }));
     const send = (address: string) => socket.send(packet, this.port, address, error => { if (error) this.log('discovery.send-error', { address, message: error.message }); });
+    // Legacy strict-schema peers receive the original advertisement as well.
+    const extended = this.capabilities();
+    if (extended) {
+      const bytes = Buffer.from(JSON.stringify({...JSON.parse(packet.toString()), capabilities: extended}));
+      for (const i of [...interfaces(), {address:'127.0.0.1',broadcast:'127.0.0.1'}]) {
+        try {socket.setMulticastInterface(i.address);socket.send(bytes,this.port,MULTICAST,()=>{});socket.send(bytes,this.port,i.broadcast,()=>{});} catch {}
+      }
+    }
     for (const i of interfaces()) {
       try { socket.setMulticastInterface(i.address); send(MULTICAST); } catch { /* Broadcast still works. */ }
       send(i.broadcast);

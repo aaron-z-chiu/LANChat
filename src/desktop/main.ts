@@ -3,7 +3,7 @@ import { join, resolve } from 'node:path';
 import { mkdirSync } from 'node:fs';
 import { z } from 'zod';
 import { Engine } from '../core/engine.js';
-import { id, name } from '../core/protocol.js';
+import { id, name, prioritySchema } from '../core/protocol.js';
 
 const flag = (name: string) => { const i = process.argv.indexOf(name); return i < 0 ? undefined : process.argv[i + 1]; };
 const profile = flag('--profile') ?? 'default';
@@ -16,7 +16,8 @@ if (!app.requestSingleInstanceLock()) { app.quit(); } else {
   let engine: Engine; let win: BrowserWindow; let quitting = false;
   app.on('second-instance', () => { win?.show(); win?.focus(); });
   app.whenReady().then(async () => {
-    engine = new Engine(join(data, 'lanchat.sqlite'));
+    const override=flag('--network-priority');
+    engine = new Engine(join(data, 'lanchat.sqlite'), {discoveryPort:process.env.LANCHAT_DISCOVERY_PORT ? z.coerce.number().int().min(1).max(65535).parse(process.env.LANCHAT_DISCOVERY_PORT) : undefined,lrdt:{disabled:process.argv.includes('--disable-lrdt')},priority:override ? prioritySchema.parse(override === 'speed' ? 'custom' : override) : undefined});
     const devUrl = process.env.LANCHAT_DEV_URL;
     if (devUrl && !/^http:\/\/127\.0\.0\.1:\d+\/$/.test(devUrl)) throw new Error('Invalid local development URL');
     win = new BrowserWindow({ width: 1140, height: 780, minWidth: 760, minHeight: 540,
@@ -31,6 +32,7 @@ if (!app.requestSingleInstanceLock()) { app.quit(); } else {
         return handler(...schema.parse(args) as any[]);
       });
     };
+    register('priority',z.tuple([prioritySchema]),value=>engine.setPriority(value));
     register('snapshot', z.tuple([]), () => engine.snapshot());
     register('rename', z.tuple([name]), displayName => engine.rename(displayName));
     register('send', z.tuple([z.enum(['private', 'group']), id, z.string().trim().min(1).max(8000)]), (kind, target, content) => engine.sendMessage(kind, target, content));

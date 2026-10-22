@@ -40,7 +40,7 @@ npm run dev -- --profile peer-b
 npm run dev -- --profile peer-c
 ```
 
-Choose different names. Each profile has a persistent UUID, separate SQLite database, Electron session, Vite port, and automatically assigned TCP port. Multicast loopback supports discovery between local instances; production and development use the same networking engine. A single profile cannot open twice.
+Choose different names. Each profile has a persistent UUID, separate SQLite database, Electron session, Vite port, and automatically assigned TCP and LRDT UDP ports. Multicast loopback supports discovery between local instances; production and development use the same networking engine. A single profile cannot open twice.
 
 Data lives under Electron's platform app-data directory, in `LANChat/<profile>/lanchat.sqlite`. Set the optional `LANCHAT_DATA_ROOT` environment variable to change the parent directory. Windows PowerShell example:
 
@@ -56,6 +56,35 @@ LANCHAT_DATA_ROOT=.local-data npm run dev -- --profile peer-a
 ```
 
 Copying a profile to another concurrently running device duplicates its identity and is unsupported. To create another person, use another profile rather than copying a database.
+
+## Networking priority and reliable UDP
+
+Settings (click your profile) offers **Auto**, **Safe**, and **Custom**. Auto is the default and prefers LRDT v1 when both peers advertise it. Safe on either side selects TCP. Custom prefers LRDT with TCP fallback, exactly like Auto today; the neutral label avoids an unsupported speed claim. Handshake failure falls back after approximately 1.5 seconds. Runtime changes persist and restart network sessions; history and pending messages remain intact. The sidebar shows each peer's transport and fallback state.
+
+```sh
+npm run dev -- --profile peer-a
+npm run dev -- --profile peer-b --network-priority safe
+npm run dev -- --profile peer-c --network-priority custom
+npm run test:lrdt
+npm run benchmark
+npm run benchmark -- --repetitions 3
+npm run test:desktop -- --blocked-lrdt
+```
+
+`speed` is accepted as a CLI alias for `custom`. TCP remains a live control/fallback connection even for LRDT peers. LRDT application frames travel over UDP with selective retransmission, fragmentation, adaptive RTT/RTO, congestion control, ordered reassembly, and session isolation. Application ACK still means SQLite persistence; transport ACK means only a segment was received.
+
+```text
+React UI / Messaging / Groups / Synchronization / LCP
+                         |
+                 Transport Manager
+                Auto / Safe / Custom
+                  /             \
+          TCP baseline      LRDT reliable UDP
+                  \             /
+             Discovery + IPv4 LAN
+```
+
+See [LRDT design](docs/LRDT_DESIGN.md), [measured evaluation](docs/LRDT_EVALUATION.md), and structured results in `results/`. Windows must additionally allow the dynamic LRDT UDP port. The rest of this README describes the preserved LCP/application baseline; LRDT design documents the extended transport path.
 
 ## Architecture
 
@@ -155,7 +184,7 @@ The desktop smoke test uses Playwright to launch three real Electron profiles ag
 Verified on the current macOS Apple Silicon machine with Node 25 and Electron 45:
 
 - Type checking and compiled app build; three-window Electron smoke in both compiled and Vite development modes.
-- All 10 automated protocol, framing, SQLite, group conflict, delivery, expiry/offline, and multi-process tests passed.
+- All 39 automated protocol, framing, SQLite, group conflict, delivery, expiry/offline, and multi-process tests passed.
 - Three real peer processes: automatic discovery in both directions, PM/ACK, group fanout, persisted identity/history, duplicate rejection, GOODBYE and crash timeout, reconnection on a new port.
 - Charlie recovers 38 missed group messages in several pages from Bob while Alice (the original sender of most of them) is offline. Alice later retries; no duplicate entries appear.
 
