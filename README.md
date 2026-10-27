@@ -214,7 +214,3 @@ Windows source/configuration is prepared, but **Windows has not been run in this
 - Packet/input size and connection limits protect against basic malformed traffic; there is no comprehensive denial-of-service protection.
 - Display order uses sender wall-clock timestamps and UUID tie-breaking; clocks are not synchronized. Expiry also depends on device clocks.
 - Main/preload source edits require restarting `npm run dev`; React/CSS changes use Vite HMR. Compiled mode has no development server.
-
-## Future work
-
-Physical macOS/Windows testing first, then authenticated identity and reviewed E2EE design, QR verification, more precise group conflict rules, history pagination/retention, file transfer, and eventually a mobile client. Voice/video, cloud messaging, central servers, consensus protocols, and multi-hop wireless routing are outside this implementation.
