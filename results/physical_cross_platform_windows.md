@@ -115,7 +115,7 @@ At W1, testing paused until the user confirmed both endpoints were in Safe mode.
 - Exact local receive time: NOT OBSERVED. The payload was absent at the initial database read and present at the later UI/history observation.
 - Read-only persistence verification: 2026-10-29T12:20:32.755+08:00; exactly 1 matching message in SQLite, sequence 1, ID `dafc27b2-9f3e-4153-9dcc-0a41d6f237c7`, kind `private`, sender the Mac UUID, target/audience the Windows UUID.
 - Duplicate visible: NO; one UI bubble and one matching saved row. No claim is made about unobserved transport-level retransmissions.
-- Screenshot evidence: `physical_windows_w2_20261029_1220.png`.
+- Screenshot evidence: `physical_windows_w2_20261029_1220.jpg`.
 - Result: PASS for Windows-side Safe/TCP reception and single persisted/visible copy. Mac-side ACK state was not independently observed by Windows.
 
 ```text
@@ -144,7 +144,7 @@ Paused at W2 until the user instructed `Please send message`. Windows remained i
 - Read-only SQLite verification at 2026-10-29T12:23:53.480+08:00: exact payload count 1; recipient Mac UUID; `attempts=1`, `last_attempt=1793247823894`, `delivered=1`.
 - Application ACK: locally recorded by the normal pending-message delivery row and the normal Delivered UI state. No independent Mac-screen observation or user-read claim is made.
 - Duplicate visible: NO; one outgoing UI bubble and one matching saved message.
-- Screenshot evidence: `physical_windows_w3_20261029_1223.png`.
+- Screenshot evidence: `physical_windows_w3_20261029_1223.jpg`.
 - Result: PASS under the W3 criterion of locally observed Safe/TCP path and normal delivered state.
 
 ```text
@@ -162,10 +162,10 @@ Paused at W3 until the user stated `Both set to auto mode`, authorizing W4 prepa
 - User confirmed both endpoints set to Auto mode.
 - Start/local persisted-mode verification: 2026-10-29T12:28:27.619+08:00; `networkPriority=auto`, exact required payload count 0 in the read-only SQLite query.
 - Initial live observation at 12:28:35.741+08:00: Mac-Aaron present, `Connected via TCP (fallback)`. This observation does not verify LRDT; no W4 payload was visible.
-- Initial-fallback screenshot: `physical_windows_w4_initial_fallback_20261029_1228.png`.
+- Initial-fallback screenshot: `physical_windows_w4_initial_fallback_20261029_1228.jpg`.
 - Performed one ordinary network pause/reconnect cycle using the existing UI, with no production or timing changes. Pause action at 12:29:01.419+08:00; reconnect at 12:29:12.522+08:00.
 - At 12:29:22.141+08:00, screenshot and accessibility tree both showed Mac-Aaron `Connected via LRDT`, one nearby person, normal active local network, and the existing Safe-mode history.
-- LRDT-readiness screenshot: `physical_windows_w4_lrdt_ready_20261029_1229.png`.
+- LRDT-readiness screenshot: `physical_windows_w4_lrdt_ready_20261029_1229.jpg`.
 - Requested the Mac send `AUTO-M2W-001 physical Mac to Windows over LRDT` once, then observed reception as recorded below.
 - Local persistent UUID and target peer remain the same as previous tests. No Windows-to-Mac Auto-mode test message has been sent.
 - Read-only polling at 2026-10-29T12:29:57.123+08:00 still found 0 exact payloads. At 12:30:07.134+08:00 it found exactly 1, with local mode still `auto`.
@@ -176,7 +176,7 @@ Paused at W3 until the user stated `Both set to auto mode`, authorizing W4 prepa
 - At 12:30:16.686+08:00, the screenshot and accessibility tree both showed the exact payload once in Mac-Aaron's conversation and `Connected via LRDT` in the sidebar.
 - LRDT selected locally: YES, explicitly observed before and after reception; no TCP fallback label in the successful reception observation.
 - Duplicate visible: NO; one matching saved message and one visible bubble.
-- Reception screenshot: `physical_windows_w4_received_20261029_1230.png`.
+- Reception screenshot: `physical_windows_w4_received_20261029_1230.jpg`.
 - Result: PASS after ordinary reconnect. The initial Auto-mode TCP fallback remains a recorded observation; its cause is not established. No source code, timing constants, firewall settings, or test logic was changed.
 
 ```text
@@ -204,7 +204,7 @@ Paused at W4 before sending a Windows message. The user then confirmed the Mac s
 - At 12:34:07.946+08:00, after scrolling the existing message log to show the entire outgoing entry, the screenshot and accessibility tree both showed the exact W5 payload with `Delivered` and the sidebar `Connected via LRDT`.
 - Application ACK: confirmed in the normal local delivered row and UI state; Mac's own screen and human-read status were not observed from Windows.
 - Duplicate visible: NO; one outgoing bubble and one matching saved message.
-- Screenshot: `physical_windows_w5_20261029_1234.png`.
+- Screenshot: `physical_windows_w5_20261029_1234.jpg`.
 - Result: PASS under the W5 criterion of locally selected/established LRDT and normal delivered state.
 
 ```text
@@ -237,7 +237,7 @@ Paused at W5 until the user instructed `Please proceed`, authorizing W6 group me
 - Read-only verification at 12:45:33.038+08:00 confirmed both payloads occur once, both have the same target group UUID `d058608b-566d-4cdc-abce-e24fe8de3674`, and group membership remains exactly the two expected UUIDs.
 - The Windows message's recipient row targets the Mac UUID with `attempts=1`, `last_attempt=1793249124493`, `delivered=1`.
 - At 12:45:32.738+08:00, screenshot and accessibility tree show both group payloads once and `Delivered 1/1` on the Windows message. The sidebar shows Mac-Aaron connected via LRDT; local saved priority remains Auto.
-- Screenshot: `physical_windows_w6_20261029_1245.png`.
+- Screenshot: `physical_windows_w6_20261029_1245.jpg`.
 - Result: PASS for Windows-observed group visibility, expected membership, Mac-message reception, and acknowledged Windows group send. No independent Mac-screen or human-read confirmation is claimed.
 - Both same-name group records are preserved; no group was deleted or renamed. The unused Windows-created group is not treated as a duplicate message.
 
@@ -262,14 +262,14 @@ Paused at W6 until the user instructed `Please proceed`, authorizing W7 restart/
 - Baseline: two groups and six saved message IDs, including the four private-test payloads and two group-test payloads.
 - At 12:47:55.319+08:00, desktop-session endpoint inspection found main PID 10400 listening on TCP `0.0.0.0:59391`, UDP `0.0.0.0:61693`, and discovery UDP `0.0.0.0:45878`. UDP 61693 is the non-discovery LRDT listener, identified from the application's existing networking implementation and process ownership.
 - At 12:48:06.913+08:00, the screenshot showed Mac-Aaron `Connected via LRDT`, two-member group membership, both group payloads, and the existing `Delivered 1/1` state.
-- Pre-restart screenshot: `physical_windows_w7_before_20261029_1248.png`.
+- Pre-restart screenshot: `physical_windows_w7_before_20261029_1248.jpg`.
 - Closed the existing app normally with Alt+F4 at 12:48:11.520+08:00. Verified old main process 10400 exited before launching again; verification timestamp 12:48:27.432+08:00.
 - Relaunched the existing compiled app with the same data root and `--profile Windows-Aaron`; new main process PID 29652, start 12:48:27.463+08:00. Used the app's existing same-profile single-instance focus behavior to show the restarted window; the main process remained PID 29652.
 - At 12:48:32.381+08:00, the read-only database check showed UUID after restart `b409098b-ab65-4578-a0bd-4d1238173f16`, the same display name and database incarnation, saved Auto mode, six messages, and two groups.
 - At 12:48:43.921+08:00, new endpoints were TCP `0.0.0.0:63054`, non-discovery/LRDT UDP `0.0.0.0:56875`, discovery UDP `0.0.0.0:45878`, owned by PID 29652. TCP/LRDT ports changed; discovery port did not.
 - At 12:49:10.887+08:00, Windows automatically showed Mac-Aaron online and `Connected via TCP (fallback)` in the screenshot and accessibility tree. No manual remote endpoint was supplied, no retry cycle was forced, and no post-restart test message was sent.
-- Post-restart reconnection screenshot: `physical_windows_w7_reconnected_20261029_1249.png`.
-- At 12:49:40.933+08:00, opened the tested group and visually confirmed both group payloads and their existing delivery state remain visible. Screenshot: `physical_windows_w7_history_20261029_1249.png`.
+- Post-restart reconnection screenshot: `physical_windows_w7_reconnected_20261029_1249.jpg`.
+- At 12:49:40.933+08:00, opened the tested group and visually confirmed both group payloads and their existing delivery state remain visible. Screenshot: `physical_windows_w7_history_20261029_1249.jpg`.
 - Read-only verification at 12:50:17.345+08:00 found all six baseline message IDs retained, six unique saved messages, and no missing baseline ID.
 - Same local UUID: YES. Endpoint changed: YES. Mac reconnected as observed on Windows: YES. Post-restart LRDT selection: NO at the recorded observation; TCP fallback was selected. Cause is not established.
 - Requested separate Mac-side confirmation that Windows-Aaron is recognized as UUID `b409098b-ab65-4578-a0bd-4d1238173f16` and reconnected. The initial W7 checkpoint was NOT VERIFIED while that confirmation was pending.
@@ -307,12 +307,12 @@ W7 is complete. The user subsequently selected Alice/Bob/Charlie placement and a
 - At 12:58:11.011+08:00, read-only SQLite inspection confirmed exactly 10 retained recovery messages, 10 unique message IDs, each payload RECOVERY-001 through RECOVERY-010 occurring once. Every message is from Alice UUID, targets group `e8049fd0-60dc-4dbc-bc92-7b69c00ec535`, and has both Bob and Charlie in its original audience. Group revision/membership remained unchanged.
 - Sender-authored timestamps span `1793249862270`–`1793249862291` milliseconds since epoch; these are not claimed as exact Windows receive times.
 - At 12:58:18.187+08:00, the live screenshot showed Mac-Charlie Offline, Mac-Aaron Connected via TCP (fallback), Bob's local network active, and the recovery messages in history. Windows did not independently capture Charlie's exact offline transition before Alice sent the messages; that temporal condition requires Mac-side confirmation.
-- Saved Bob's full retained-message manifest with exact IDs and audiences as `physical_windows_w8_retained_20261029_1258.json`; screenshot `physical_windows_w8_retained_bottom_20261029_1258.png`.
+- Saved Bob's full retained-message manifest with exact IDs and audiences as `physical_windows_w8_retained_20261029_1258.json`; screenshot `physical_windows_w8_retained_bottom_20261029_1258.jpg`.
 - Bob retention subcheck: PASS, 10 messages, 0 duplicate payload entries. Overall recovery: NOT VERIFIED until Alice-offline/Charlie-return sequence and Charlie's actual recovered copies are confirmed. Windows has remained online continuously through W8 preparation and retention.
 - The user subsequently asked `I think the W8 has finished?`. No test repetition was initiated; inspected the existing final state.
 - At 2026-10-29T13:03:13.978+08:00, read-only verification again found all ten expected payloads exactly once, ten unique IDs, unchanged three-member group, and unchanged source commit.
 - At 13:03:15.547+08:00, screenshot and accessibility tree both showed Mac-Aaron/Alice `Offline`, Mac-Charlie `Connected via LRDT`, local network active, and Bob's retained recovery history.
-- Final-stage screenshot: `physical_windows_w8_alice_offline_charlie_online_20261029_1303.png`.
+- Final-stage screenshot: `physical_windows_w8_alice_offline_charlie_online_20261029_1303.jpg`.
 - This proves Alice is offline at the recorded final-state observation and Charlie is connected to Bob. It does not by itself prove Charlie's saved-message count, Charlie's earlier offline state at send time, or that Alice was offline for the entire recovery interval.
 - Requested the Mac-side result to confirm initial group convergence, Charlie offline for all ten sends, Alice stopped before Charlie returned and stayed offline, and Charlie recovering all ten exactly once from Bob. No rerun is required if those conditions have already been verified remotely.
 - The user explicitly authorized direct communication with the agent on Mac-Charlie, then specified private messaging (`Talk with PM`). The connected Codex chat list did not expose that Mac agent; used LANChat's normal PM UI as requested.
@@ -347,7 +347,7 @@ result: NOT VERIFIED (Charlie's result and timing confirmation pending)
   - Alice was reopened later at 13:05:42.773, after recovery was complete. This is consistent with Windows observing Alice offline at 13:03:15.547 and back online at 13:05:59.530.
 - Cross-checks: group UUID, revision/event, role UUIDs, sender-authored send-time range, first/last message IDs, and ten-message count agree with Bob's locally saved evidence. At 13:08:28.502+08:00, all ten Bob message IDs were still present, unique, and matched the pre-confirmation manifest.
 - Full request/reply, sender/target IDs, delivery state, and local retention recheck: `physical_windows_w8_mac_confirmation_pm_20261029_1308.json`.
-- Reply screenshot: `physical_windows_w8_mac_reply_20261029_1308.png`.
+- Reply screenshot: `physical_windows_w8_mac_reply_20261029_1308.jpg`.
 - Final result: PASS using Windows-observed Bob retention and separately attributed Mac-confirmed Charlie recovery. No remote success is inferred solely from the Windows peer list or the status-request delivery ACK.
 
 ```text

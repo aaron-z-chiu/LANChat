@@ -1,0 +1,89 @@
+{
+  "observedAt": "2026-10-29T05:08:28.502Z",
+  "source": "LANChat PM received locally from Mac-Charlie UUID; remote claims attributed to Mac endpoint",
+  "privateMessages": [
+    {
+      "id": "d3fd54bb-10f0-4d7f-a705-de2e6ce305a1",
+      "message": {
+        "version": 1,
+        "messageId": "d3fd54bb-10f0-4d7f-a705-de2e6ce305a1",
+        "senderId": "b409098b-ab65-4578-a0bd-4d1238173f16",
+        "timestamp": 1793250404738,
+        "kind": "private",
+        "targetId": "209a9c94-3413-49ca-b515-f2256e1c7221",
+        "content": "W8-STATUS-REQUEST-001 from Windows/Bob (Windows-Aaron). The user asked me to confirm W8 directly with the Mac-Charlie agent by PM. Group: PHYSICAL-RECOVERY-TEST, UUID e8049fd0-60dc-4dbc-bc92-7b69c00ec535. Windows retained RECOVERY-001 through RECOVERY-010 exactly once. Windows observed Alice offline and Charlie connected via LRDT at 13:03:15 +08:00; Alice is back online at the current observation. Please reply here starting W8-STATUS-REPLY with the completed Mac-side result: (1) initial three-member convergence, (2) Charlie offline during all ten Alice sends, (3) Alice stopped BEFORE Charlie returned and remained offline throughout recovery, (4) Charlie recovered all ten exactly once from Bob, (5) PASS/FAIL/NOT VERIFIED plus supporting times/logs if available. Report existing evidence; no rerun or source changes requested. For cross-check, RECOVERY-001 ID is 48927e6f-4087-4d54-bd69-a998c266fb0e and RECOVERY-010 ID is 53be1c1c-8ee6-4e71-90be-9cc41f7ad447.",
+        "audience": [
+          "209a9c94-3413-49ca-b515-f2256e1c7221"
+        ]
+      },
+      "delivery": [
+        {
+          "peer_id": "209a9c94-3413-49ca-b515-f2256e1c7221",
+          "attempts": 1,
+          "delivered": 1
+        }
+      ]
+    },
+    {
+      "id": "2548b2ba-b40e-4813-a567-12248e643679",
+      "message": {
+        "version": 1,
+        "messageId": "2548b2ba-b40e-4813-a567-12248e643679",
+        "senderId": "209a9c94-3413-49ca-b515-f2256e1c7221",
+        "timestamp": 1793250481077,
+        "kind": "private",
+        "targetId": "b409098b-ab65-4578-a0bd-4d1238173f16",
+        "content": "W8-STATUS-REPLY-001 Mac-side RECOVERY-01: PASS. Existing evidence only; no rerun or source changes.\n\nGroup PHYSICAL-RECOVERY-TEST / e8049fd0-60dc-4dbc-bc92-7b69c00ec535. Roles: Alice=Mac-Aaron (6531ea21-5915-4f5b-bcaf-14d5c04dadc3), Bob=Windows-Aaron (b409098b-ab65-4578-a0bd-4d1238173f16), Charlie=Mac-Charlie (209a9c94-3413-49ca-b515-f2256e1c7221). All times below are 2026-10-29, UTC+08:00.\n\n1. Initial convergence: Alice/Charlie snapshots at 12:57:19.951 contained identical revision-1 three-member state (event e58bc211-16c6-47c5-9a60-58ad306d6d46). The user separately confirmed all three members visible on Windows before Charlie was paused.\n2. Charlie network=false and history empty at 12:57:42.269. Alice persisted/sent RECOVERY-001..010 at 12:57:42.270..291. All ten Bob application ACKs were logged at 12:57:42.279..302. At 12:57:58.446 Charlie remained network=false with zero messages, while Alice showed each message 1/2 acknowledged.\n3. Alice pause requested 12:58:22.828; completed snapshot at 12:58:22.837 showed Alice network=false, Charlie network=false, Charlie history empty. Only then was Charlie restarted: request 12:58:22.837, network.started 12:58:22.838. Alice stayed network=false throughout recovery, confirmed again at 12:58:28.849 and 12:58:39.854. Offline means application networking stopped; Alice's window was subsequently closed.\n4. Charlie log: transport.selected=lrdt for Bob at 12:58:23.067; lrdt.received.SYNC_RESPONSE from Bob at 12:58:23.077; ten message.received events at 12:58:23.079..083, all source=Bob UUID and relayed=true; sync.completed count=10 at 12:58:23.083. Original senderId remained Alice. Snapshot contained all ten expected IDs/payloads, 10 distinct IDs, zero missing or duplicate entries. Native Charlie UI showed RECOVERY-001..010 once each; Bob connected via LRDT, Alice offline. Your RECOVERY-001 and RECOVERY-010 IDs match exactly.\n5. PASS under Mac-observable recovery criterion. Evidence saved in results/physical_cross_platform_macos.md. Windows UI/disk was not independently inspected from Mac.\n\nAlice was reopened later at 13:05:42.773 for this separate PM-confirmation request, after M8 was already complete. Current Alice online status does not describe the earlier recovery interval.",
+        "audience": [
+          "b409098b-ab65-4578-a0bd-4d1238173f16"
+        ]
+      },
+      "delivery": []
+    }
+  ],
+  "bobRetainedCount": 10,
+  "bobUniqueMessageIds": 10,
+  "baselineIdsMissing": [],
+  "recoveryPayloadCounts": [
+    {
+      "content": "RECOVERY-001",
+      "count": 1
+    },
+    {
+      "content": "RECOVERY-002",
+      "count": 1
+    },
+    {
+      "content": "RECOVERY-003",
+      "count": 1
+    },
+    {
+      "content": "RECOVERY-004",
+      "count": 1
+    },
+    {
+      "content": "RECOVERY-005",
+      "count": 1
+    },
+    {
+      "content": "RECOVERY-006",
+      "count": 1
+    },
+    {
+      "content": "RECOVERY-007",
+      "count": 1
+    },
+    {
+      "content": "RECOVERY-008",
+      "count": 1
+    },
+    {
+      "content": "RECOVERY-009",
+      "count": 1
+    },
+    {
+      "content": "RECOVERY-010",
+      "count": 1
+    }
+  ]
+}

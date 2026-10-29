@@ -1,0 +1,219 @@
+{
+  "observedAt": "2026-10-29T04:59:04.445Z",
+  "windowsRole": "Bob",
+  "profile": "Windows-Aaron",
+  "roles": {
+    "alice": "6531ea21-5915-4f5b-bcaf-14d5c04dadc3",
+    "bob": "b409098b-ab65-4578-a0bd-4d1238173f16",
+    "charlie": "209a9c94-3413-49ca-b515-f2256e1c7221"
+  },
+  "group": {
+    "groupId": "e8049fd0-60dc-4dbc-bc92-7b69c00ec535",
+    "name": "PHYSICAL-RECOVERY-TEST",
+    "members": [
+      "6531ea21-5915-4f5b-bcaf-14d5c04dadc3",
+      "b409098b-ab65-4578-a0bd-4d1238173f16",
+      "209a9c94-3413-49ca-b515-f2256e1c7221"
+    ],
+    "audience": [
+      "6531ea21-5915-4f5b-bcaf-14d5c04dadc3",
+      "b409098b-ab65-4578-a0bd-4d1238173f16",
+      "209a9c94-3413-49ca-b515-f2256e1c7221"
+    ],
+    "revision": 1,
+    "updatedBy": "6531ea21-5915-4f5b-bcaf-14d5c04dadc3",
+    "eventId": "e58bc211-16c6-47c5-9a60-58ad306d6d46",
+    "expiresAt": null
+  },
+  "expectedCount": 10,
+  "retainedCount": 10,
+  "uniqueMessageIdCount": 10,
+  "payloadCounts": [
+    {
+      "content": "RECOVERY-001",
+      "count": 1
+    },
+    {
+      "content": "RECOVERY-002",
+      "count": 1
+    },
+    {
+      "content": "RECOVERY-003",
+      "count": 1
+    },
+    {
+      "content": "RECOVERY-004",
+      "count": 1
+    },
+    {
+      "content": "RECOVERY-005",
+      "count": 1
+    },
+    {
+      "content": "RECOVERY-006",
+      "count": 1
+    },
+    {
+      "content": "RECOVERY-007",
+      "count": 1
+    },
+    {
+      "content": "RECOVERY-008",
+      "count": 1
+    },
+    {
+      "content": "RECOVERY-009",
+      "count": 1
+    },
+    {
+      "content": "RECOVERY-010",
+      "count": 1
+    }
+  ],
+  "allFromAlice": true,
+  "allAddressedToBobAndCharlie": true,
+  "messages": [
+    {
+      "localSequence": 17,
+      "messageId": "48927e6f-4087-4d54-bd69-a998c266fb0e",
+      "version": 1,
+      "senderId": "6531ea21-5915-4f5b-bcaf-14d5c04dadc3",
+      "timestamp": 1793249862270,
+      "kind": "group",
+      "targetId": "e8049fd0-60dc-4dbc-bc92-7b69c00ec535",
+      "content": "RECOVERY-001",
+      "audience": [
+        "b409098b-ab65-4578-a0bd-4d1238173f16",
+        "209a9c94-3413-49ca-b515-f2256e1c7221"
+      ]
+    },
+    {
+      "localSequence": 18,
+      "messageId": "a68be603-2cbe-4324-99c1-756b14dbea24",
+      "version": 1,
+      "senderId": "6531ea21-5915-4f5b-bcaf-14d5c04dadc3",
+      "timestamp": 1793249862272,
+      "kind": "group",
+      "targetId": "e8049fd0-60dc-4dbc-bc92-7b69c00ec535",
+      "content": "RECOVERY-002",
+      "audience": [
+        "b409098b-ab65-4578-a0bd-4d1238173f16",
+        "209a9c94-3413-49ca-b515-f2256e1c7221"
+      ]
+    },
+    {
+      "localSequence": 19,
+      "messageId": "52547301-84bd-4854-a654-c3e006665596",
+      "version": 1,
+      "senderId": "6531ea21-5915-4f5b-bcaf-14d5c04dadc3",
+      "timestamp": 1793249862274,
+      "kind": "group",
+      "targetId": "e8049fd0-60dc-4dbc-bc92-7b69c00ec535",
+      "content": "RECOVERY-003",
+      "audience": [
+        "b409098b-ab65-4578-a0bd-4d1238173f16",
+        "209a9c94-3413-49ca-b515-f2256e1c7221"
+      ]
+    },
+    {
+      "localSequence": 20,
+      "messageId": "ce2bca0b-8207-4ea5-9849-59c42dd3c448",
+      "version": 1,
+      "senderId": "6531ea21-5915-4f5b-bcaf-14d5c04dadc3",
+      "timestamp": 1793249862278,
+      "kind": "group",
+      "targetId": "e8049fd0-60dc-4dbc-bc92-7b69c00ec535",
+      "content": "RECOVERY-004",
+      "audience": [
+        "b409098b-ab65-4578-a0bd-4d1238173f16",
+        "209a9c94-3413-49ca-b515-f2256e1c7221"
+      ]
+    },
+    {
+      "localSequence": 21,
+      "messageId": "3dc5010f-2a5f-40d1-8c7d-8f5bdc8de5cd",
+      "version": 1,
+      "senderId": "6531ea21-5915-4f5b-bcaf-14d5c04dadc3",
+      "timestamp": 1793249862281,
+      "kind": "group",
+      "targetId": "e8049fd0-60dc-4dbc-bc92-7b69c00ec535",
+      "content": "RECOVERY-005",
+      "audience": [
+        "b409098b-ab65-4578-a0bd-4d1238173f16",
+        "209a9c94-3413-49ca-b515-f2256e1c7221"
+      ]
+    },
+    {
+      "localSequence": 22,
+      "messageId": "b584b7a6-1cac-4abc-87fe-e1314572a037",
+      "version": 1,
+      "senderId": "6531ea21-5915-4f5b-bcaf-14d5c04dadc3",
+      "timestamp": 1793249862284,
+      "kind": "group",
+      "targetId": "e8049fd0-60dc-4dbc-bc92-7b69c00ec535",
+      "content": "RECOVERY-006",
+      "audience": [
+        "b409098b-ab65-4578-a0bd-4d1238173f16",
+        "209a9c94-3413-49ca-b515-f2256e1c7221"
+      ]
+    },
+    {
+      "localSequence": 23,
+      "messageId": "1d938c67-6b14-40fb-aecd-cbd83f299646",
+      "version": 1,
+      "senderId": "6531ea21-5915-4f5b-bcaf-14d5c04dadc3",
+      "timestamp": 1793249862285,
+      "kind": "group",
+      "targetId": "e8049fd0-60dc-4dbc-bc92-7b69c00ec535",
+      "content": "RECOVERY-007",
+      "audience": [
+        "b409098b-ab65-4578-a0bd-4d1238173f16",
+        "209a9c94-3413-49ca-b515-f2256e1c7221"
+      ]
+    },
+    {
+      "localSequence": 24,
+      "messageId": "7e31e0ec-2cc3-45fc-a96e-15130060e3fd",
+      "version": 1,
+      "senderId": "6531ea21-5915-4f5b-bcaf-14d5c04dadc3",
+      "timestamp": 1793249862287,
+      "kind": "group",
+      "targetId": "e8049fd0-60dc-4dbc-bc92-7b69c00ec535",
+      "content": "RECOVERY-008",
+      "audience": [
+        "b409098b-ab65-4578-a0bd-4d1238173f16",
+        "209a9c94-3413-49ca-b515-f2256e1c7221"
+      ]
+    },
+    {
+      "localSequence": 25,
+      "messageId": "cbf47831-0972-4fd8-bdb4-f6ccb59760d8",
+      "version": 1,
+      "senderId": "6531ea21-5915-4f5b-bcaf-14d5c04dadc3",
+      "timestamp": 1793249862289,
+      "kind": "group",
+      "targetId": "e8049fd0-60dc-4dbc-bc92-7b69c00ec535",
+      "content": "RECOVERY-009",
+      "audience": [
+        "b409098b-ab65-4578-a0bd-4d1238173f16",
+        "209a9c94-3413-49ca-b515-f2256e1c7221"
+      ]
+    },
+    {
+      "localSequence": 26,
+      "messageId": "53be1c1c-8ee6-4e71-90be-9cc41f7ad447",
+      "version": 1,
+      "senderId": "6531ea21-5915-4f5b-bcaf-14d5c04dadc3",
+      "timestamp": 1793249862291,
+      "kind": "group",
+      "targetId": "e8049fd0-60dc-4dbc-bc92-7b69c00ec535",
+      "content": "RECOVERY-010",
+      "audience": [
+        "b409098b-ab65-4578-a0bd-4d1238173f16",
+        "209a9c94-3413-49ca-b515-f2256e1c7221"
+      ]
+    }
+  ],
+  "remoteCharlieRecovery": "NOT VERIFIED",
+  "originalSenderOfflineDuringRecovery": "NOT VERIFIED"
+}
