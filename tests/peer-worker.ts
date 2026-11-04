@@ -1,9 +1,9 @@
 // Runs the real production engine in an independent OS process, no fake transport.
 import { Engine } from '../src/core/engine';
 const [path, port] = process.argv.slice(2);
-// Keep the production offline threshold (8 seconds). A 1.4-second threshold
-// falsely evicts live peers during shared-runner scheduling/SQLite stalls.
-const engine = new Engine(path, { priority: (process.argv[4] ?? 'safe') as 'safe'|'auto'|'custom', discoveryPort: Number(port), heartbeatMs: 200, tickMs: 60, syncMs: 300,
+// Exercise production timing: aggressive test-only heartbeat expiry and sync
+// polling cause false evictions and LRDT control-queue starvation on slow runners.
+const engine = new Engine(path, { priority: (process.argv[4] ?? 'safe') as 'safe'|'auto'|'custom', discoveryPort: Number(port),
   log: (event, details) => { if (process.connected) process.send?.({ event, details }); } });
 process.on('message', async (raw: unknown) => {
   const { request, method, args } = raw as { request: number; method: string; args: any[] };
