@@ -20,6 +20,7 @@ async function until(check: () => Promise<boolean> | boolean, label: string, tim
 class PeerProcess {
   child: ChildProcess;
   events: string[] = [];
+  diagnostics: unknown[] = [];
   ready: Promise<void>;
   private sequence = 0;
   private pending = new Map<number, { resolve: (x: any) => void; reject: (e: Error) => void; timer: ReturnType<typeof setTimeout> }>();
@@ -30,7 +31,13 @@ class PeerProcess {
     this.ready = new Promise((resolve, reject) => {
       this.child.on('message', (message: any) => {
         if (message.ready) resolve();
-        if (message.event) this.events.push(message.event);
+        if (message.event) {
+          this.events.push(message.event);
+          if (!['peer.heartbeat', 'sync.requested', 'sync.completed', 'sync.page'].includes(message.event)) {
+            this.diagnostics.push(message);
+            if (this.diagnostics.length > 150) this.diagnostics.shift();
+          }
+        }
         if (message.request) {
           const pending = this.pending.get(message.request); if (!pending) return;
           this.pending.delete(message.request); clearTimeout(pending.timer);
@@ -124,6 +131,11 @@ test('three separate peers discover, persist, ACK, replicate, recover via anothe
     await Promise.all([c.call('stop'), c.call('start'), c.call('stop'), c.call('start')]);
     assert.equal((await c.snapshot()).network, true);
     console.log('Verified 3 independent processes: UDP discovery, TCP, PM privacy, ACK, SQLite restart, group revisions, >2 sync pages, recovery through Bob, duplicate retries, GOODBYE, heartbeat timeout, and leave.');
+  } catch (error) {
+    for (const [name, peer] of [['Alice', a], ['Bob', b], ['Charlie', c]] as const) {
+      console.error(JSON.stringify({ name, snapshot: await peer.snapshot().catch(String), events: peer.diagnostics }));
+    }
+    throw error;
   } finally {
     await Promise.allSettled([a.close(), b.close(), c.close()]);
     for (const p of [a, b, c]) if (p.child.exitCode === null && p.child.signalCode === null) p.child.kill();
