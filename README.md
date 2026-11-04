@@ -204,13 +204,3 @@ Windows source/configuration is prepared, but **Windows has not been run in this
 8. Verify timeout after killing a process without GOODBYE, reconnection after Wi-Fi/IP changes, firewall behavior, sleep/wake, and Ethernet/Wi-Fi/VPN combinations.
 9. Check separate local profiles, Unicode/newlines, the temporary room deadline, minimum window size, and graceful shutdown.
 
-## Known limitations
-
-- Trusted local networks only: traffic and SQLite contents are **unencrypted**, UUIDs are not authenticated identities, and group metadata/relayed message authorship are not cryptographically verified. A malicious participant can impersonate a peer or fabricate state. Do not use this version for sensitive communication.
-- IPv4 and one local discovery domain only. Access-point client isolation, blocked UDP, VPN routing, or restrictive firewalls can prevent discovery or direct connections. No WAN relay, NAT traversal, or manual remote connection feature.
-- Tested on one macOS machine with multiple independent processes/windows; Windows and physical cross-device interoperability, real IP changes, and sleep/wake still need verification.
-- Simple whole-snapshot group conflicts can overwrite concurrent edits, including a leave. Tombstone/history retention is indefinite; no secure expiration or full delete.
-- History sync supports small LAN groups. The UI loads local history into memory, snapshots use full local state, and group changes rescan logs. No archival/pruning, large-history pagination in the UI, or unbounded-size LAN support.
-- Packet/input size and connection limits protect against basic malformed traffic; there is no comprehensive denial-of-service protection.
-- Display order uses sender wall-clock timestamps and UUID tie-breaking; clocks are not synchronized. Expiry also depends on device clocks.
-- Main/preload source edits require restarting `npm run dev`; React/CSS changes use Vite HMR. Compiled mode has no development server.
