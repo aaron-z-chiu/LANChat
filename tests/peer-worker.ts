@@ -1,7 +1,9 @@
 // Runs the real production engine in an independent OS process, no fake transport.
 import { Engine } from '../src/core/engine';
 const [path, port] = process.argv.slice(2);
-const engine = new Engine(path, { priority: (process.argv[4] ?? 'safe') as 'safe'|'auto'|'custom', discoveryPort: Number(port), heartbeatMs: 200, timeoutMs: 1400, tickMs: 60, syncMs: 300,
+// Keep the production offline threshold (8 seconds). A 1.4-second threshold
+// falsely evicts live peers during shared-runner scheduling/SQLite stalls.
+const engine = new Engine(path, { priority: (process.argv[4] ?? 'safe') as 'safe'|'auto'|'custom', discoveryPort: Number(port), heartbeatMs: 200, tickMs: 60, syncMs: 300,
   log: (event, details) => { if (process.connected) process.send?.({ event, details }); } });
 process.on('message', async (raw: unknown) => {
   const { request, method, args } = raw as { request: number; method: string; args: any[] };
@@ -9,6 +11,8 @@ process.on('message', async (raw: unknown) => {
     let value: unknown;
     switch (method) {
       case 'snapshot': value = engine.snapshot(); break;
+      // Simulate a brief scheduling/SQLite stall without changing production code.
+      case 'stall': Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 2000); break;
       case 'rename': value = await engine.rename(args[0]); break;
       case 'send': value = engine.sendMessage(args[0], args[1], args[2]); break;
       case 'createGroup': value = engine.createGroup(args[0], args[1], args[2]); break;
