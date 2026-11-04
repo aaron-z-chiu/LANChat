@@ -97,7 +97,9 @@ test('three separate peers discover, persist, ACK, replicate, recover via anothe
     assert.ok(c.events.includes('sync.page'));
     if(process.env.LANCHAT_TEST_PRIORITY==='auto')assert.ok(c.events.includes('lrdt.received.SYNC_RESPONSE'),'history responses actually arrived over UDP');
     await a.call('start');
-    await until(async () => (await a.snapshot()).messages.filter(m => missing.includes(m.messageId) && m.senderId === aid).every(m => m.state === 'delivered'), 'original sender retries receive duplicate ACKs');
+    // Pending messages retain exponential retry backoff across stop/start. Its
+    // 30-second cap can exceed the helper's default deadline on a busy runner.
+    await until(async () => (await a.snapshot()).messages.filter(m => missing.includes(m.messageId) && m.senderId === aid).every(m => m.state === 'delivered'), 'original sender retries receive duplicate ACKs', 45000);
     const afterSync = await c.snapshot();
     assert.equal(afterSync.messages.length, 39); // initial + 38 missed group messages
     assert.equal(new Set(afterSync.messages.map(m => m.messageId)).size, afterSync.messages.length);
