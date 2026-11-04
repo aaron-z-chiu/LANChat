@@ -8,6 +8,58 @@ import { Store } from '../src/core/store';
 import { encodeFrame, compareGroups, type Group, type ChatMessage } from '../src/core/protocol';
 
 const message = (senderId: string, targetId: string, content = 'Hello'): ChatMessage => ({ version: 1, messageId: randomUUID(), senderId, targetId, kind: 'private', timestamp: Date.now(), content, audience: [targetId] });
+
+test('Chinese identity and multiline Unicode history survive reopening a database in a spaced path', () => {
+  const root = mkdtempSync(join(tmpdir(), 'lanchat-store-'));
+  const path = join(root, '中文 profile', 'chat.sqlite');
+  let store: Store | undefined;
+  try {
+    store = new Store(path);
+    store.rename('张同学 😀');
+    const identity = store.identity(), peer = randomUUID();
+    const original = message(identity.peerId, peer, '你好，组员！\n第二行 😀\nCafe\u0301');
+    assert.equal(store.insert(original, [peer]), true);
+    store.close(); store = undefined;
+    store = new Store(path);
+    assert.deepEqual(store.identity(), identity);
+    assert.deepEqual(store.message(original.messageId), original);
+    assert.deepEqual(store.page(0).messages, [original]);
+    assert.equal(store.pending(peer).length, 1);
+    assert.equal(store.messages()[0].state, 'sending');
+  } finally { store?.close(); rmSync(root, { recursive: true, force: true }); }
+});
+
+test('duplicate IDs cannot overwrite history, reset attempts, add recipients, or undo an ACK', () => {
+  const root = mkdtempSync(join(tmpdir(), 'lanchat-dedup-'));
+  const path = join(root, 'chat.sqlite');
+  let store: Store | undefined;
+  try {
+    store = new Store(path);
+    const peer = randomUUID(), unrelatedPeer = randomUUID();
+    const original = message(store.identity().peerId, peer, '原始消息 😀');
+    assert.equal(store.insert(original, [peer]), true);
+    store.attempted(original.messageId, peer);
+    const before = store.pending(peer);
+    const duplicate = { ...original, content: '替换内容', targetId: unrelatedPeer, audience: [unrelatedPeer] };
+    assert.equal(store.insert(duplicate, [peer, unrelatedPeer]), false);
+    assert.deepEqual(store.message(original.messageId), original);
+    assert.deepEqual(store.pending(peer), before);
+    assert.equal(store.pending(unrelatedPeer).length, 0);
+    const cursor = store.page(0).cursor;
+    assert.equal(store.ack(original.messageId, peer), true);
+    store.close(); store = undefined;
+    store = new Store(path);
+    assert.equal(store.insert(duplicate, [peer, unrelatedPeer]), false);
+    assert.deepEqual(store.rawMessages(), [original]);
+    assert.equal(store.pending(peer).length, 0);
+    assert.equal(store.pending(unrelatedPeer).length, 0);
+    assert.equal(store.messages()[0].state, 'delivered');
+    assert.equal(store.messages()[0].recipients, 1);
+    assert.equal(store.messages()[0].delivered, 1);
+    assert.equal(store.page(0).cursor, cursor);
+    assert.deepEqual(store.page(cursor).messages, []);
+  } finally { store?.close(); rmSync(root, { recursive: true, force: true }); }
+});
 test('SQLite identity, deduplication, delivery state, cursors, and history survive restart', () => {
   const root = mkdtempSync(join(tmpdir(), 'lanchat-store-')), path = join(root, 'chat.sqlite');
   let store = new Store(path);
