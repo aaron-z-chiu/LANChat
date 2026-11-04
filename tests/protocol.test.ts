@@ -1,10 +1,41 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import { MAX_FRAME, FrameDecoder, encodeFrame, wireSchema, discoverySchema, chatSchema, groupSchema, compareGroups, type Wire } from '../src/core/protocol';
+import { MAX_FRAME, FrameDecoder, encodeFrame, wireSchema, discoverySchema, chatSchema, groupSchema, compareGroups, name, type Wire } from '../src/core/protocol';
 
 const senderId = randomUUID();
 const hello: Wire = { version: 1, type: 'HELLO', senderId, dbId: randomUUID(), displayName: 'Alice', tcpPort: 52000 };
+
+test('display names trim whitespace and enforce the Unicode boundary of the locked validator', () => {
+  assert.equal(name.parse(' \t张同学 🛩️\n'), '张同学 🛩️');
+  for (const valid of ['张', '界'.repeat(64), '😀'.repeat(64)]) {
+    assert.equal(name.parse(valid), valid);
+    assert.equal(wireSchema.safeParse({ ...hello, displayName: valid }).success, true);
+    assert.equal(discoverySchema.safeParse({ protocol: 'LANChat', version: 1, type: 'ANNOUNCE', peerId: senderId, displayName: valid, tcpPort: 1234 }).success, true);
+  }
+  for (const invalid of ['', ' \t\r\n', '界'.repeat(65), '😀'.repeat(64) + 'a']) {
+    assert.equal(name.safeParse(invalid).success, false);
+    assert.equal(wireSchema.safeParse({ ...hello, displayName: invalid }).success, false);
+    assert.equal(discoverySchema.safeParse({ protocol: 'LANChat', version: 1, type: 'ANNOUNCE', peerId: senderId, displayName: invalid, tcpPort: 1234 }).success, false);
+  }
+});
+
+test('chat content preserves internal Unicode and newlines while enforcing trimmed length limits', () => {
+  const base = { version: 1, messageId: randomUUID(), senderId, timestamp: 1, kind: 'private', targetId: senderId, audience: [senderId] };
+  const content = '你好，组员！\n第二行 😀\nCafe\u0301';
+  assert.equal(chatSchema.parse({ ...base, content: ` \t${content}\r\n` }).content, content);
+  for (const valid of ['界'.repeat(8000), '😀'.repeat(8000)]) {
+    const parsed = chatSchema.parse({ ...base, content: ` ${valid} ` });
+    assert.equal(parsed.content, valid);
+    const frame: Wire = { version: 1, type: 'PRIVATE_MESSAGE', senderId, message: parsed };
+    const bytes = encodeFrame(frame);
+    assert.equal(bytes.readUInt32BE(0), bytes.length - 4);
+    assert.deepEqual(new FrameDecoder().feed(bytes), [frame]);
+  }
+  for (const invalid of ['', ' \t\r\n', '界'.repeat(8001), '😀'.repeat(8000) + 'a']) {
+    assert.equal(chatSchema.safeParse({ ...base, content: invalid }).success, false);
+  }
+});
 test('LCP framing decodes every byte boundary, Unicode, and coalesced frames', () => {
   const message: Wire = { version: 1, type: 'PRIVATE_MESSAGE', senderId, message: { version: 1, messageId: randomUUID(), senderId, timestamp: Date.now(), kind: 'private', targetId: senderId, audience: [senderId], content: 'Hello 🛩️ 你好\nsecond line' } };
   const bytes = Buffer.concat([encodeFrame(hello), encodeFrame(message), encodeFrame(hello)]);
