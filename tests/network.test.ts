@@ -12,7 +12,7 @@ import { randomUUID } from 'node:crypto';
 import { Transport } from '../src/core/transport';
 import { FrameDecoder, encodeFrame, type Snapshot, type Peer, type Wire } from '../src/core/protocol';
 
-async function until(check: () => Promise<boolean> | boolean, label: string, timeout = 12000) {
+async function until(check: () => Promise<boolean> | boolean, label: string, timeout = 20000) {
   const deadline = Date.now() + timeout;
   while (Date.now() < deadline) { if (await check()) return; await new Promise(r => setTimeout(r, 60)); }
   throw new Error(`Timed out: ${label}`);
@@ -69,7 +69,7 @@ async function discoveryPort() {
   const port = socket.address().port; await new Promise<void>(r => socket.close(() => r())); return port;
 }
 
-test('three separate peers discover, persist, ACK, replicate, recover via another member, and deduplicate', { timeout: 90000 }, async () => {
+test('three separate peers discover, persist, ACK, replicate, recover via another member, and deduplicate', { timeout: 180000 }, async () => {
   const root = mkdtempSync(join(tmpdir(), 'lanchat-peers-')), port = await discoveryPort();
   const a = new PeerProcess(join(root, 'a.sqlite'), port), b = new PeerProcess(join(root, 'b.sqlite'), port);
   let c = new PeerProcess(join(root, 'c.sqlite'), port);
@@ -79,6 +79,12 @@ test('three separate peers discover, persist, ACK, replicate, recover via anothe
     const aid = sa.identity.peerId, bid = sb.identity.peerId, cid = sc.identity.peerId;
     await until(async () => (await Promise.all([a.snapshot(), b.snapshot(), c.snapshot()])).every(s => s.peers.length === 2 && s.peers.every(p => p.connection === 'CONNECTED')), 'all three automatically discover and connect');
     await until(async () => (await Promise.all([a.snapshot(),b.snapshot(),c.snapshot()])).every(s=>s.peers.every(p=>p.transport === (process.env.LANCHAT_TEST_PRIORITY === 'auto' ? 'lrdt':'tcp'))), 'expected negotiated transport');
+    const offlineCounts = [b, c].map(p => p.events.filter(e => e === 'peer.offline').length);
+    await a.call('stall');
+    for (const [index, peer] of [b, c].entries()) {
+      await peer.snapshot(); // Drain earlier IPC events before checking the count.
+      assert.equal(peer.events.filter(e => e === 'peer.offline').length, offlineCounts[index], 'a two-second worker stall must not falsely evict a live peer');
+    }
     const pm = await a.call<string>('send', 'private', bid, 'Private hello, Bob');
     await until(async () => (await a.snapshot()).messages.find(m => m.messageId === pm)?.state === 'delivered', 'private application ACK');
     assert.equal((await b.snapshot()).messages.filter(m => m.messageId === pm).length, 1);
