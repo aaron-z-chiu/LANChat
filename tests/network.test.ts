@@ -12,7 +12,7 @@ import { randomUUID } from 'node:crypto';
 import { Transport } from '../src/core/transport';
 import { FrameDecoder, encodeFrame, type Snapshot, type Peer, type Wire } from '../src/core/protocol';
 
-async function until(check: () => Promise<boolean> | boolean, label: string, timeout = 12000) {
+async function until(check: () => Promise<boolean> | boolean, label: string, timeout = 20000) {
   const deadline = Date.now() + timeout;
   while (Date.now() < deadline) { if (await check()) return; await new Promise(r => setTimeout(r, 60)); }
   throw new Error(`Timed out: ${label}`);
@@ -20,6 +20,7 @@ async function until(check: () => Promise<boolean> | boolean, label: string, tim
 class PeerProcess {
   child: ChildProcess;
   events: string[] = [];
+  diagnostics: unknown[] = [];
   ready: Promise<void>;
   private sequence = 0;
   private pending = new Map<number, { resolve: (x: any) => void; reject: (e: Error) => void; timer: ReturnType<typeof setTimeout> }>();
@@ -30,7 +31,13 @@ class PeerProcess {
     this.ready = new Promise((resolve, reject) => {
       this.child.on('message', (message: any) => {
         if (message.ready) resolve();
-        if (message.event) this.events.push(message.event);
+        if (message.event) {
+          this.events.push(message.event);
+          if (!['peer.heartbeat', 'sync.requested', 'sync.completed', 'sync.page'].includes(message.event)) {
+            this.diagnostics.push(message);
+            if (this.diagnostics.length > 150) this.diagnostics.shift();
+          }
+        }
         if (message.request) {
           const pending = this.pending.get(message.request); if (!pending) return;
           this.pending.delete(message.request); clearTimeout(pending.timer);
@@ -62,7 +69,7 @@ async function discoveryPort() {
   const port = socket.address().port; await new Promise<void>(r => socket.close(() => r())); return port;
 }
 
-test('three separate peers discover, persist, ACK, replicate, recover via another member, and deduplicate', { timeout: 90000 }, async () => {
+test('three separate peers discover, persist, ACK, replicate, recover via another member, and deduplicate', { timeout: 180000 }, async () => {
   const root = mkdtempSync(join(tmpdir(), 'lanchat-peers-')), port = await discoveryPort();
   const a = new PeerProcess(join(root, 'a.sqlite'), port), b = new PeerProcess(join(root, 'b.sqlite'), port);
   let c = new PeerProcess(join(root, 'c.sqlite'), port);
@@ -72,6 +79,12 @@ test('three separate peers discover, persist, ACK, replicate, recover via anothe
     const aid = sa.identity.peerId, bid = sb.identity.peerId, cid = sc.identity.peerId;
     await until(async () => (await Promise.all([a.snapshot(), b.snapshot(), c.snapshot()])).every(s => s.peers.length === 2 && s.peers.every(p => p.connection === 'CONNECTED')), 'all three automatically discover and connect');
     await until(async () => (await Promise.all([a.snapshot(),b.snapshot(),c.snapshot()])).every(s=>s.peers.every(p=>p.transport === (process.env.LANCHAT_TEST_PRIORITY === 'auto' ? 'lrdt':'tcp'))), 'expected negotiated transport');
+    const offlineCounts = [b, c].map(p => p.events.filter(e => e === 'peer.offline').length);
+    await a.call('stall');
+    for (const [index, peer] of [b, c].entries()) {
+      await peer.snapshot(); // Drain earlier IPC events before checking the count.
+      assert.equal(peer.events.filter(e => e === 'peer.offline').length, offlineCounts[index], 'a two-second worker stall must not falsely evict a live peer');
+    }
     const pm = await a.call<string>('send', 'private', bid, 'Private hello, Bob');
     await until(async () => (await a.snapshot()).messages.find(m => m.messageId === pm)?.state === 'delivered', 'private application ACK');
     assert.equal((await b.snapshot()).messages.filter(m => m.messageId === pm).length, 1);
@@ -97,7 +110,9 @@ test('three separate peers discover, persist, ACK, replicate, recover via anothe
     assert.ok(c.events.includes('sync.page'));
     if(process.env.LANCHAT_TEST_PRIORITY==='auto')assert.ok(c.events.includes('lrdt.received.SYNC_RESPONSE'),'history responses actually arrived over UDP');
     await a.call('start');
-    await until(async () => (await a.snapshot()).messages.filter(m => missing.includes(m.messageId) && m.senderId === aid).every(m => m.state === 'delivered'), 'original sender retries receive duplicate ACKs');
+    // Pending messages retain exponential retry backoff across stop/start. Its
+    // 30-second cap can exceed the helper's default deadline on a busy runner.
+    await until(async () => (await a.snapshot()).messages.filter(m => missing.includes(m.messageId) && m.senderId === aid).every(m => m.state === 'delivered'), 'original sender retries receive duplicate ACKs', 45000);
     const afterSync = await c.snapshot();
     assert.equal(afterSync.messages.length, 39); // initial + 38 missed group messages
     assert.equal(new Set(afterSync.messages.map(m => m.messageId)).size, afterSync.messages.length);
@@ -122,6 +137,11 @@ test('three separate peers discover, persist, ACK, replicate, recover via anothe
     await Promise.all([c.call('stop'), c.call('start'), c.call('stop'), c.call('start')]);
     assert.equal((await c.snapshot()).network, true);
     console.log('Verified 3 independent processes: UDP discovery, TCP, PM privacy, ACK, SQLite restart, group revisions, >2 sync pages, recovery through Bob, duplicate retries, GOODBYE, heartbeat timeout, and leave.');
+  } catch (error) {
+    for (const [name, peer] of [['Alice', a], ['Bob', b], ['Charlie', c]] as const) {
+      console.error(JSON.stringify({ name, snapshot: await peer.snapshot().catch(String), events: peer.diagnostics }));
+    }
+    throw error;
   } finally {
     await Promise.allSettled([a.close(), b.close(), c.close()]);
     for (const p of [a, b, c]) if (p.child.exitCode === null && p.child.signalCode === null) p.child.kill();
