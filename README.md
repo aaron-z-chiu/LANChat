@@ -1,4 +1,5 @@
 # LANChat
+[![Windows CI](https://github.com/aaron-z-chiu/LANChat/actions/workflows/ci.yml/badge.svg)](https://github.com/aaron-z-chiu/LANChat/actions/workflows/ci.yml)
 
 LANChat is an offline, decentralized desktop messenger for macOS and Windows. People on the same Wi-Fi or LAN automatically discover each other, exchange direct private messages, and create shared group chats. Every instance is an equal peer with its own SQLite database. There is no account, cloud API, dedicated messaging server, or central group database.
 
