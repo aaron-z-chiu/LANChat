@@ -1,5 +1,7 @@
 # LANChat
 [![Windows CI](https://github.com/aaron-z-chiu/LANChat/actions/workflows/ci.yml/badge.svg)](https://github.com/aaron-z-chiu/LANChat/actions/workflows/ci.yml)
+[![macOS CI](https://github.com/aaron-z-chiu/LANChat/actions/workflows/ci-macos.yml/badge.svg)](https://github.com/aaron-z-chiu/LANChat/actions/workflows/ci-macos.yml)
+[![Ubuntu CI](https://github.com/aaron-z-chiu/LANChat/actions/workflows/ci-linux.yml/badge.svg)](https://github.com/aaron-z-chiu/LANChat/actions/workflows/ci-linux.yml)
 
 LANChat is an offline, decentralized desktop messenger for macOS and Windows. People on the same Wi-Fi or LAN automatically discover each other, exchange direct private messages, and create shared group chats. Every instance is an equal peer with its own SQLite database. There is no account, cloud API, dedicated messaging server, or central group database.
 
@@ -167,6 +169,8 @@ Private history is shared **only between its original two endpoints**, directly.
 Recovery is possible only if a reachable eligible peer still has the message. Losing all copies loses the message. Membership changes may cancel undelivered group recipients; current group membership takes precedence over an older pending audience.
 
 ## Verification
+
+GitHub Actions runs type checking, unit and network tests, LRDT tests, and the production build on Windows, macOS, and Ubuntu. Each badge links to its platform's workflow runs. These jobs do not launch the desktop UI or test connectivity between physical devices.
 
 ```sh
 npm run typecheck

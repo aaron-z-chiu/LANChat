@@ -11,7 +11,7 @@ This index links LANChat features to their implementation, tests and recorded re
 | Durable identity, messages and ACK state | `src/core/store.ts`, `src/core/engine.ts` | `tests/store.test.ts`, `tests/engine.test.ts` | Physical RESTART-01 |
 | Group state and secondary-peer recovery | `src/core/store.ts`, `src/core/engine.ts` | `tests/store.test.ts`, `tests/network.test.ts` | Physical GROUP-01 and RECOVERY-01 |
 | Desktop isolation and user flows | `src/desktop/preload.ts`, `src/desktop/main.ts`, `src/ui/main.tsx` | `scripts/smoke.mjs` | `docs/desktop-smoke.png`; physical records |
-| Windows automated checks | `.github/workflows/ci.yml` | Workflow invokes typecheck, tests, LRDT tests and build | Configuration exists; a successful hosted run must be checked in GitHub Actions |
+| Windows, macOS and Ubuntu automated checks | `.github/workflows/ci-checks.yml` | Each platform workflow calls the shared typecheck, test, LRDT test and build steps | Check the three README badges for hosted results |
 
 ## Reading older status notes
 
