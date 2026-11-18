@@ -58,7 +58,7 @@ Use the runner's `--output` argument and the plotter's `--summary` and `--output
 
 ## Report integration
 
-Add a subsection titled “Joint Effect of Packet Loss and Sliding-Window Size” after “Sliding-Window Performance” and before “Congestion-Control Behavior” in the Evaluation section. Copy the vector figure into `paper/figure/` and use a full-width `figure*` for legible cell annotations. Add a separate row to the evaluation setup table for the factorial sweep and its fixed 10 ms one-way delay.
+Place the figure in “Joint Effect of Packet Loss and Sliding-Window Size,” after “Sliding-Window Performance” and before “Congestion-Control Behavior” in the Evaluation section. Copy the vector figure into `paper/figure/` and use a single-column `figure` with `\includegraphics[width=\columnwidth]{paper/figure/loss_window_heatmap.pdf}`. The PDF is sized to the 77 mm ACL column. The evaluation setup table can list the factorial sweep and its fixed 10 ms one-way delay as a separate row.
 
 **Suggested caption.** Mean LRDT completion time for one 128 KiB transfer under a factorial sweep of per-datagram packet loss and configured maximum send window. The virtual-time model uses a fixed 10 ms one-way delay and separate seeded impairment streams for DATA and ACK traffic. Each cell shows the mean of three successful trials in model milliseconds (75/75 overall). Color follows a logarithmic scale; annotations give completion times on the original scale.
 

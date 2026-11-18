@@ -12,6 +12,10 @@ from matplotlib.colors import LogNorm
 import numpy as np
 
 
+# A4 minus two 25 mm margins and the 6 mm ACL column gap, divided by two.
+ACL_COLUMN_WIDTH_MM = 77
+
+
 def render(summary: Path, output: Path) -> None:
     with summary.open(encoding="utf-8", newline="") as stream:
         rows = list(csv.DictReader(stream))
@@ -30,11 +34,11 @@ def render(summary: Path, output: Path) -> None:
             value = row["mean_completion_time_model_ms"]
             if successes:
                 times[y, x] = float(value)
-                label = f"{times[y, x]:,.1f}"
+                label = f"{times[y, x]:,.1f}".removesuffix(".0")
             else:
                 label = "N/A"
             if successes != total:
-                label += f"\n{successes}/{total} successful"
+                label += f"\n{successes}/{total} success"
             annotations[y, x] = label
 
     finite = times[np.isfinite(times)]
@@ -47,8 +51,8 @@ def render(summary: Path, output: Path) -> None:
 
     with plt.rc_context({
         "font.family": "DejaVu Sans",
-        "font.size": 10,
-        "axes.labelsize": 11,
+        "font.size": 8,
+        "axes.labelsize": 9,
         "pdf.fonttype": 42,
         "figure.facecolor": "white",
         "text.color": "#182b3d",
@@ -56,19 +60,19 @@ def render(summary: Path, output: Path) -> None:
         "xtick.color": "#182b3d",
         "ytick.color": "#182b3d",
     }):
-        fig = plt.figure(figsize=(7.1, 4.25))
-        ax = fig.add_axes((0.145, 0.17, 0.665, 0.78))
-        color_axis = fig.add_axes((0.835, 0.17, 0.027, 0.78))
+        fig = plt.figure(figsize=(ACL_COLUMN_WIDTH_MM / 25.4, 2.85))
+        ax = fig.add_axes((0.145, 0.315, 0.835, 0.67))
+        color_axis = fig.add_axes((0.185, 0.135, 0.755, 0.042))
         mesh = ax.pcolormesh(
             np.arange(len(windows) + 1), np.arange(len(losses) + 1), np.ma.masked_invalid(times),
-            cmap=cmap, norm=norm, edgecolors="white", linewidth=1.1,
+            cmap=cmap, norm=norm, edgecolors="white", linewidth=0.65,
         )
         ax.set_xticks(np.arange(len(windows)) + 0.5, labels=[str(size) for size in windows])
         ax.set_yticks(np.arange(len(losses)) + 0.5, labels=[f"{100 * loss:g}" for loss in losses])
         ax.invert_yaxis()
-        ax.set_xlabel("Maximum Sliding Window Size (segments)", labelpad=11)
-        ax.set_ylabel("Packet Loss Probability (%)", labelpad=11)
-        ax.tick_params(length=0, pad=7)
+        ax.set_xlabel("Max. sliding window (segments)", labelpad=4)
+        ax.set_ylabel("Packet loss probability (%)", labelpad=5)
+        ax.tick_params(length=0, pad=3, labelsize=8)
         for spine in ax.spines.values():
             spine.set_visible(False)
 
@@ -80,19 +84,23 @@ def render(summary: Path, output: Path) -> None:
                 color = "white" if brightness < 0.52 else "#142d43"
             else:
                 color = "#142d43"
-            ax.text(x + 0.5, y + 0.5, label, ha="center", va="center",
-                    color=color, fontsize=8 if "\n" in label else 10)
+            value_label, _, success_label = label.partition("\n")
+            ax.text(x + 0.5, y + (0.41 if success_label else 0.5), value_label,
+                    ha="center", va="center", color=color, fontsize=8.3)
+            if success_label:
+                ax.text(x + 0.5, y + 0.7, success_label,
+                        ha="center", va="center", color=color, fontsize=6.4)
 
-        colorbar = fig.colorbar(mesh, cax=color_axis)
+        colorbar = fig.colorbar(mesh, cax=color_axis, orientation="horizontal")
         colorbar.solids.set_rasterized(False)
         colorbar.solids.set_edgecolor("face")
         ticks = [value for value in (200, 500, 1000, 2000, 5000, 10000) if norm.vmin <= value <= norm.vmax]
         if len(ticks) >= 2:
             colorbar.set_ticks(ticks, labels=[f"{value:,}" for value in ticks])
         colorbar.minorticks_off()
-        colorbar.ax.tick_params(length=2.5, labelsize=9)
+        colorbar.ax.tick_params(length=2, pad=2, labelsize=7.5)
         colorbar.outline.set_linewidth(0.5)
-        colorbar.set_label("Mean Completion Time (model ms)\nLogarithmic color scale", labelpad=9, fontsize=9)
+        colorbar.set_label("Mean completion time (model ms, log scale)", labelpad=4, fontsize=8)
 
         output.mkdir(parents=True, exist_ok=True)
         fig.savefig(output / "loss_window_heatmap.pdf", metadata={"Title": "LRDT packet loss and sliding window"})
