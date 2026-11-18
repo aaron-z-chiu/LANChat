@@ -1,0 +1,256 @@
+{
+  "completion_time_statistics": "Successful trials only; standard deviation is sample SD (null for fewer than two successes).",
+  "retransmission_statistics": "Sender DATA retransmissions averaged across all trials, including failures.",
+  "conditions": [
+    {
+      "loss_probability": 0,
+      "max_window": 1,
+      "total_trials": 3,
+      "successful_trials": 3,
+      "success_rate": 1,
+      "mean_completion_time_model_ms": 2260,
+      "std_completion_time_model_ms": 0,
+      "mean_retransmissions": 0
+    },
+    {
+      "loss_probability": 0,
+      "max_window": 4,
+      "total_trials": 3,
+      "successful_trials": 3,
+      "success_rate": 1,
+      "mean_completion_time_model_ms": 580,
+      "std_completion_time_model_ms": 0,
+      "mean_retransmissions": 0
+    },
+    {
+      "loss_probability": 0,
+      "max_window": 8,
+      "total_trials": 3,
+      "successful_trials": 3,
+      "success_rate": 1,
+      "mean_completion_time_model_ms": 320,
+      "std_completion_time_model_ms": 0,
+      "mean_retransmissions": 0
+    },
+    {
+      "loss_probability": 0,
+      "max_window": 16,
+      "total_trials": 3,
+      "successful_trials": 3,
+      "success_rate": 1,
+      "mean_completion_time_model_ms": 200,
+      "std_completion_time_model_ms": 0,
+      "mean_retransmissions": 0
+    },
+    {
+      "loss_probability": 0,
+      "max_window": 32,
+      "total_trials": 3,
+      "successful_trials": 3,
+      "success_rate": 1,
+      "mean_completion_time_model_ms": 180,
+      "std_completion_time_model_ms": 0,
+      "mean_retransmissions": 0
+    },
+    {
+      "loss_probability": 0.01,
+      "max_window": 1,
+      "total_trials": 3,
+      "successful_trials": 3,
+      "success_rate": 1,
+      "mean_completion_time_model_ms": 2360,
+      "std_completion_time_model_ms": 124.89995996796796,
+      "mean_retransmissions": 1.6666666666666667
+    },
+    {
+      "loss_probability": 0.01,
+      "max_window": 4,
+      "total_trials": 3,
+      "successful_trials": 3,
+      "success_rate": 1,
+      "mean_completion_time_model_ms": 720,
+      "std_completion_time_model_ms": 177.76388834631177,
+      "mean_retransmissions": 1.6666666666666667
+    },
+    {
+      "loss_probability": 0.01,
+      "max_window": 8,
+      "total_trials": 3,
+      "successful_trials": 3,
+      "success_rate": 1,
+      "mean_completion_time_model_ms": 440,
+      "std_completion_time_model_ms": 131.14877048604,
+      "mean_retransmissions": 1.6666666666666667
+    },
+    {
+      "loss_probability": 0.01,
+      "max_window": 16,
+      "total_trials": 3,
+      "successful_trials": 3,
+      "success_rate": 1,
+      "mean_completion_time_model_ms": 326.6666666666667,
+      "std_completion_time_model_ms": 130.12814197295424,
+      "mean_retransmissions": 1.6666666666666667
+    },
+    {
+      "loss_probability": 0.01,
+      "max_window": 32,
+      "total_trials": 3,
+      "successful_trials": 3,
+      "success_rate": 1,
+      "mean_completion_time_model_ms": 286.6666666666667,
+      "std_completion_time_model_ms": 110.15141094572203,
+      "mean_retransmissions": 1.6666666666666667
+    },
+    {
+      "loss_probability": 0.05,
+      "max_window": 1,
+      "total_trials": 3,
+      "successful_trials": 3,
+      "success_rate": 1,
+      "mean_completion_time_model_ms": 3540,
+      "std_completion_time_model_ms": 307.89608636681305,
+      "mean_retransmissions": 18.666666666666668
+    },
+    {
+      "loss_probability": 0.05,
+      "max_window": 4,
+      "total_trials": 3,
+      "successful_trials": 3,
+      "success_rate": 1,
+      "mean_completion_time_model_ms": 1813.3333333333333,
+      "std_completion_time_model_ms": 197.3153144926499,
+      "mean_retransmissions": 18.666666666666668
+    },
+    {
+      "loss_probability": 0.05,
+      "max_window": 8,
+      "total_trials": 3,
+      "successful_trials": 3,
+      "success_rate": 1,
+      "mean_completion_time_model_ms": 1500,
+      "std_completion_time_model_ms": 196.9771560359221,
+      "mean_retransmissions": 18.666666666666668
+    },
+    {
+      "loss_probability": 0.05,
+      "max_window": 16,
+      "total_trials": 3,
+      "successful_trials": 3,
+      "success_rate": 1,
+      "mean_completion_time_model_ms": 1073.3333333333333,
+      "std_completion_time_model_ms": 231.80451534284947,
+      "mean_retransmissions": 18.666666666666668
+    },
+    {
+      "loss_probability": 0.05,
+      "max_window": 32,
+      "total_trials": 3,
+      "successful_trials": 3,
+      "success_rate": 1,
+      "mean_completion_time_model_ms": 1006.6666666666666,
+      "std_completion_time_model_ms": 300.88757590391356,
+      "mean_retransmissions": 18.666666666666668
+    },
+    {
+      "loss_probability": 0.1,
+      "max_window": 1,
+      "total_trials": 3,
+      "successful_trials": 3,
+      "success_rate": 1,
+      "mean_completion_time_model_ms": 4640,
+      "std_completion_time_model_ms": 918.4770002564027,
+      "mean_retransmissions": 30.666666666666668
+    },
+    {
+      "loss_probability": 0.1,
+      "max_window": 4,
+      "total_trials": 3,
+      "successful_trials": 3,
+      "success_rate": 1,
+      "mean_completion_time_model_ms": 2480,
+      "std_completion_time_model_ms": 571.664237118258,
+      "mean_retransmissions": 30.666666666666668
+    },
+    {
+      "loss_probability": 0.1,
+      "max_window": 8,
+      "total_trials": 3,
+      "successful_trials": 3,
+      "success_rate": 1,
+      "mean_completion_time_model_ms": 2513.3333333333335,
+      "std_completion_time_model_ms": 1488.2652093405038,
+      "mean_retransmissions": 30.666666666666668
+    },
+    {
+      "loss_probability": 0.1,
+      "max_window": 16,
+      "total_trials": 3,
+      "successful_trials": 3,
+      "success_rate": 1,
+      "mean_completion_time_model_ms": 1780,
+      "std_completion_time_model_ms": 348.7119154832539,
+      "mean_retransmissions": 30.666666666666668
+    },
+    {
+      "loss_probability": 0.1,
+      "max_window": 32,
+      "total_trials": 3,
+      "successful_trials": 3,
+      "success_rate": 1,
+      "mean_completion_time_model_ms": 1653.3333333333333,
+      "std_completion_time_model_ms": 550.7570547286102,
+      "mean_retransmissions": 30.666666666666668
+    },
+    {
+      "loss_probability": 0.2,
+      "max_window": 1,
+      "total_trials": 3,
+      "successful_trials": 3,
+      "success_rate": 1,
+      "mean_completion_time_model_ms": 12260,
+      "std_completion_time_model_ms": 4622.077454997915,
+      "mean_retransmissions": 72
+    },
+    {
+      "loss_probability": 0.2,
+      "max_window": 4,
+      "total_trials": 3,
+      "successful_trials": 3,
+      "success_rate": 1,
+      "mean_completion_time_model_ms": 5453.333333333333,
+      "std_completion_time_model_ms": 1417.368453625709,
+      "mean_retransmissions": 72
+    },
+    {
+      "loss_probability": 0.2,
+      "max_window": 8,
+      "total_trials": 3,
+      "successful_trials": 3,
+      "success_rate": 1,
+      "mean_completion_time_model_ms": 6400,
+      "std_completion_time_model_ms": 1703.1735084835016,
+      "mean_retransmissions": 72
+    },
+    {
+      "loss_probability": 0.2,
+      "max_window": 16,
+      "total_trials": 3,
+      "successful_trials": 3,
+      "success_rate": 1,
+      "mean_completion_time_model_ms": 6933.333333333333,
+      "std_completion_time_model_ms": 3960.3198524024965,
+      "mean_retransmissions": 72
+    },
+    {
+      "loss_probability": 0.2,
+      "max_window": 32,
+      "total_trials": 3,
+      "successful_trials": 3,
+      "success_rate": 1,
+      "mean_completion_time_model_ms": 6786.666666666667,
+      "std_completion_time_model_ms": 2156.509525444609,
+      "mean_retransmissions": 72
+    }
+  ]
+}

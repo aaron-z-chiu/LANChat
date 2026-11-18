@@ -1,0 +1,13 @@
+{
+  "loss_probabilities": [0, 0.01, 0.05, 0.1, 0.2],
+  "max_windows": [1, 4, 8, 16, 32],
+  "seeds": [100, 101, 102],
+  "reverse_seed_offset": 100,
+  "payload_bytes": 131072,
+  "frames_per_trial": 1,
+  "one_way_delay_model_ms": 10,
+  "timeout_model_ms": 120000,
+  "jitter_model_ms": 0,
+  "duplication_probability": 0,
+  "reordering_probability": 0
+}
